@@ -45,4 +45,4 @@ pipeline ExportsPipeline {
 		table: "airports";
 		file: "./airports.sqlite";
 	}
-}
+} 
