@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 from io import StringIO
-import sqlite3
+import sqlalchemy
 
 # Define the CSV URL
 csv_url = "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV"
@@ -30,31 +30,17 @@ def process_csv(csv_url, database_name="trainstops.sqlite", table_name="trainsto
         df = df[(df['Breite'] >= -90) & (df['Breite'] <= 90)]
         df = df[df['IFOPT'].str.match(r'^[A-Za-z]{2}:\d+:\d+(\:\d+)?$')]
 
-        # SQLite connection and cursor
-        conn = sqlite3.connect(database_name)
-        cursor = conn.cursor()
-
-        # Create the "trainstops" table
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS trainstops (
-                EVA_NR BIGINT,
-                DS100 TEXT,
-                IFOPT TEXT,
-                NAME TEXT,
-                Verkehr TEXT,
-                Laenge FLOAT,
-                Breite FLOAT,
-                Betreiber_Name TEXT,
-                Betreiber_Nr BIGINT
-            )
-        ''')
-
-        # Insert data into the "trainstops" table
-        df.to_sql(name=table_name, con=conn, index=False, if_exists='replace')
-
-        # Commit changes and close connection
-        conn.commit()
-        conn.close()
+        df.to_sql('trainstops', 'sqlite:///trainstops.sqlite', if_exists='replace', index=False, dtype={
+            "EVA_NR": sqlalchemy.BIGINT,
+            "DS100": sqlalchemy.TEXT,
+            "IFOPT": sqlalchemy.TEXT,
+            "NAME": sqlalchemy.TEXT,
+            "Verkehr": sqlalchemy.TEXT,
+            "Laenge": sqlalchemy.FLOAT,
+            "Breite": sqlalchemy.FLOAT,
+            "Betreiber_Name": sqlalchemy.TEXT,
+            "Betreiber_Nr": sqlalchemy.BIGINT
+        })
 
         print("Data processing and insertion into SQLite completed.")
     else:
