@@ -28,13 +28,15 @@ def process_csv(csv_url, database_name="trainstops.sqlite", table_name="trainsto
     # Create the "trainstops" table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS trainstops (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            BahnhofId TEXT,
-            Name TEXT,
+            EVA_NR BIGINT,
+            DS100 TEXT,
+            IFOPT TEXT,
+            NAME TEXT,
             Verkehr TEXT,
             Laenge FLOAT,
             Breite FLOAT,
-            IFOPT TEXT
+            Betreiber_Name TEXT,
+            Betreiber_Nr BIGINT
         )
     ''')
 
