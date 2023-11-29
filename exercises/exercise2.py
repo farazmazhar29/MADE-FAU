@@ -36,7 +36,7 @@ def process_csv(csv_url, database_name="trainstops.sqlite", table_name="trainsto
             Laenge FLOAT,
             Breite FLOAT,
             Betreiber_Name TEXT,
-            Betreiber_Nr BIGINT
+            Betreiber_Nr INT
         )
     ''')
 
