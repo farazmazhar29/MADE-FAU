@@ -52,13 +52,21 @@ def FetchData():
 def PreprocessData(data):
     # Remove rows with missing values
     data[0] = data[0].dropna()
+    # data[1] = data[1].dropna()
     print(data[0])
+    # print(data[1])
 
     # Impute missing values with mean
     data[1]['imdb_score'].fillna(data[1]['imdb_score'].mean(), inplace=True)
     data[1]['imdb_votes'].fillna(data[1]['imdb_votes'].mean(), inplace=True)
+    data[1]['tmdb_popularity'].fillna(data[1]['tmdb_popularity'].mean(), inplace=True)
+    data[1]['tmdb_score'].fillna(data[1]['tmdb_score'].mean(), inplace=True)
+
+    data[1] = data[1].dropna()
+
     # Rename columns to make them more readable
-    #    data.rename(columns={'Traded Volume': 'Volume', 'Turnover': 'Turnover'}, inplace=True)
+    data[1].rename(columns={'imdb_id': 'IMDB_id', 'imdb_score': 'IMDB_score', 'imdb_votes': 'IMDB_votes',
+                            'tmdb_popularity': 'TMDB_popularity', 'tmdb_score': 'TMDB_score'}, inplace=True)
 
     # Convert the 'Date' column to datetime format
     #    data['Date'] = pd.to_datetime(data['Date'])
@@ -76,8 +84,8 @@ def TransferToSqlite(data):
     engine = create_engine(f'sqlite:///{dbFile}')
 
     # Transfer the preprocessed data to SQLite
-    data[0].to_sql('Naflix_credit_data', engine, index=False, if_exists='replace')
-    data[1].to_sql('Naflix_titles_data', engine, index=False, if_exists='replace')
+    data[0].to_sql('Neflix_credit_data', engine, index=False, if_exists='replace')
+    data[1].to_sql('Neflix_titles_data', engine, index=False, if_exists='replace')
 
 
 def main():
