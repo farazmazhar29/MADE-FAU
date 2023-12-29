@@ -9,13 +9,15 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 from sqlalchemy import create_engine
 
 # Kaggle dataset URL
-datasetUrl = 'victorsoeiro/netflix-tv-shows-and-movies'
+hepatitis_c_url = 'davidechicco/hepatitis-c-ehrs-from-japan'
+arterial_disease_url = 'davidechicco/arterial-disease-and-ibd-ehrs-from-france'
+chronic_kidney_disease_url = 'davidechicco/chronic-kidney-disease-ehrs-abu-dhabi'
 
 # Directory to download and extract the dataset
 downloadDir = '../data/raw'
 
 # SQLite database file
-dbFile = '../data/netflix-tv-shows-and-movies.sqlite'
+dbFile = '../data/correlation-analysis-of-health-datasets.sqlite'
 
 
 def DownloadDataset():
@@ -26,7 +28,9 @@ def DownloadDataset():
     if not os.path.exists(downloadDir):
         os.makedirs(downloadDir)
 
-    api.dataset_download_files(datasetUrl, path=downloadDir, unzip=True)
+    api.dataset_download_files(hepatitis_c_url, path=downloadDir, unzip=True)
+    api.dataset_download_files(arterial_disease_url, path=downloadDir, unzip=True)
+    api.dataset_download_files(chronic_kidney_disease_url, path=downloadDir, unzip=True)
 
 
 def ExtractZip(zipFile, extractPath):
@@ -39,43 +43,36 @@ def FetchData():
     files = os.listdir(downloadDir)
 
     # Find the CSV file in the extracted files
-    creditCsvFile = [file for file in files if file.endswith('.csv')][0]
-    titleCsvFile = [file for file in files if file.endswith('.csv')][1]
+    arterialDiseaseCsvFile = [file for file in files if file.endswith('.csv')][0]
+    CKDCsvFile = [file for file in files if file.endswith('.csv')][1]
+    hepatitisCsvFile = [file for file in files if file.endswith('.csv')][2]
 
     # Read the CSV file into a Pandas DataFrame
-    creditsData = pd.read_csv(os.path.join(downloadDir, creditCsvFile))
-    titlesData = pd.read_csv(os.path.join(downloadDir, titleCsvFile))
+    arterialDiseaseData = pd.read_csv(os.path.join(downloadDir, arterialDiseaseCsvFile))
+    CKDData = pd.read_csv(os.path.join(downloadDir, CKDCsvFile))
+    hepatitisData = pd.read_csv(os.path.join(downloadDir, hepatitisCsvFile))
 
-    return [creditsData, titlesData]
+    return [arterialDiseaseData, CKDData, hepatitisData]
 
 
 def PreprocessData(data):
     # Remove rows with missing values
     data[0] = data[0].dropna()
-    # data[1] = data[1].dropna()
-    print(data[0])
-    # print(data[1])
-
-    # Impute missing values with mean
-    data[1]['imdb_score'].fillna(data[1]['imdb_score'].mean(), inplace=True)
-    data[1]['imdb_votes'].fillna(data[1]['imdb_votes'].mean(), inplace=True)
-    data[1]['tmdb_popularity'].fillna(data[1]['tmdb_popularity'].mean(), inplace=True)
-    data[1]['tmdb_score'].fillna(data[1]['tmdb_score'].mean(), inplace=True)
+    data[1] = data[1].dropna()
+    data[2] = data[2].dropna()
 
     data[1] = data[1].dropna()
 
     # Rename columns to make them more readable
-    data[1].rename(columns={'imdb_id': 'IMDB_id', 'imdb_score': 'IMDB_score', 'imdb_votes': 'IMDB_votes',
-                            'tmdb_popularity': 'TMDB_popularity', 'tmdb_score': 'TMDB_score'}, inplace=True)
+    data[0].rename(columns={'sex_0female_1male': 'sex'}, inplace=True)
+    data[0].rename(columns={'immunossupressants': 'immunosuppressant'}, inplace=True)
 
-    # Convert the 'Date' column to datetime format
-    #    data['Date'] = pd.to_datetime(data['Date'])
+    data[1].rename(columns={'CholesterolBaseline': 'cholesterol'}, inplace=True)
+    data[1].rename(columns={'CreatinineBaseline': 'creatinine'}, inplace=True)
+    data[1].rename(columns={'BMIBaseline': 'BMI'}, inplace=True)
+    data[1].rename(columns={'BMIBaseline': 'BMI'}, inplace=True)
 
-    # Normalize numerical columns using StandardScaler
-    #    scaler = StandardScaler()
-    #    numerical_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Turnover']
-    #    data[numerical_columns] = scaler.fit_transform(data[numerical_columns])
-
+    data[2].rename(columns={'BMIBaseline': 'BMI'}, inplace=True)
     return data
 
 
@@ -84,8 +81,9 @@ def TransferToSqlite(data):
     engine = create_engine(f'sqlite:///{dbFile}')
 
     # Transfer the preprocessed data to SQLite
-    data[0].to_sql('Neflix_credit_data', engine, index=False, if_exists='replace')
-    data[1].to_sql('Neflix_titles_data', engine, index=False, if_exists='replace')
+    data[0].to_sql('arterial_disease_data', engine, index=False, if_exists='replace')
+    data[1].to_sql('CKD_data', engine, index=False, if_exists='replace')
+    data[2].to_sql('hepatitis_data', engine, index=False, if_exists='replace')
 
 
 def main():
