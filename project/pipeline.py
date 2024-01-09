@@ -56,23 +56,33 @@ def FetchData():
 
 
 def PreprocessData(data):
-    # Remove rows with missing values
+    # 1: Drop rows with missing values for simplicity
     data[0] = data[0].dropna()
     data[1] = data[1].dropna()
     data[2] = data[2].dropna()
 
-    data[1] = data[1].dropna()
+    # 2: Rename columns to make them more readable and identical accross datasets
+    data[0].rename(
+        columns={'sex_0female_1male': 'sex', 'immunossupressants': 'immunosuppressant', 'smoker': 'historysmoking',
+                 'arterial_hypertension': 'hypertension'}, inplace=True)
+    data[1].rename(columns={'AgeBaseline': 'Age', 'HistoryHTN ': 'hypertension', 'BMIBaseline': 'BMI',
+                                   'HistoryDiabetes': 'diabetes', 'CholesterolBaseline': 'cholesterol'}, inplace=True)
+    data[2].rename(columns={'age': 'age', 'cholesterolbaseline': 'cholesterol'}, inplace=True)
 
-    # Rename columns to make them more readable
-    data[0].rename(columns={'sex_0female_1male': 'sex'}, inplace=True)
-    data[0].rename(columns={'immunossupressants': 'immunosuppressant'}, inplace=True)
+    # 3: Synchronizing all values of 'Sex' column in the CKD dataset
+    data[2] = data[2].replace(2, 0)
 
-    data[1].rename(columns={'CholesterolBaseline': 'cholesterol'}, inplace=True)
-    data[1].rename(columns={'CreatinineBaseline': 'creatinine'}, inplace=True)
-    data[1].rename(columns={'BMIBaseline': 'BMI'}, inplace=True)
-    data[1].rename(columns={'BMIBaseline': 'BMI'}, inplace=True)
+    # 4: Rename columns to make them identical across datasets and convert to lowercase
+    data[1].columns = data[1].columns.str.lower()
+    data[2].columns = data[2].columns.str.lower()
+    data[0].columns = data[0].columns.str.lower()
 
-    data[2].rename(columns={'BMIBaseline': 'BMI'}, inplace=True)
+    # 5: creating new column
+    # Create a new column 'Diabetes' based on the condition
+    data[2]['diabetes'] = (data[2]['glucose'] >= 126).astype(int)
+
+    # Dropping the original 'glucose' column
+    data[2].drop('glucose', axis=1, inplace=True)
     return data
 
 
