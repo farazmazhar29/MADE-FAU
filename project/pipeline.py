@@ -66,7 +66,8 @@ def PreprocessData(data):
         columns={'sex_0female_1male': 'sex', 'immunossupressants': 'immunosuppressant', 'smoker': 'historysmoking',
                  'arterial_hypertension': 'hypertension'}, inplace=True)
     data[1].rename(columns={'AgeBaseline': 'Age', 'HistoryHTN ': 'hypertension', 'BMIBaseline': 'BMI',
-                                   'HistoryDiabetes': 'diabetes', 'CholesterolBaseline': 'cholesterol'}, inplace=True)
+                            'HistoryDiabetes': 'diabetes', 'CholesterolBaseline': 'cholesterol',
+                            'HistoryDLD': 'dyslipidemia'}, inplace=True)
     data[2].rename(columns={'age': 'age', 'cholesterolbaseline': 'cholesterol'}, inplace=True)
 
     # 3: Synchronizing all values of 'Sex' column in the CKD dataset
