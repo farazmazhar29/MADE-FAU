@@ -3,6 +3,11 @@ import zipfile
 import pandas as pd
 import sqlalchemy
 
+
+def celsius_to_fahrenheit(temp_cels):
+    return (temp_cels * 9 / 5) + 32
+
+
 URL = "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip"
 
 urllib.request.urlretrieve(URL, "data.zip")
@@ -14,8 +19,8 @@ fields = ["Geraet", "Hersteller", "Model", "Monat", "Temperatur in °C (DWD)", "
 df = pd.read_csv('../exercises/data.csv', sep=";", index_col=False, usecols=fields, encoding='utf-8', decimal=",")
 df.rename(columns={"Temperatur in °C (DWD)": "Temperatur", "Batterietemperatur in °C": "Batterietemperatur"},
           inplace=True)
-df['Temperatur'] = (df['Temperatur'] * 9 / 5) + 32
-df['Batterietemperatur'] = df['Batterietemperatur']
+df['Temperatur'] = celsius_to_fahrenheit(df['Temperatur'])
+df['Batterietemperatur'] = celsius_to_fahrenheit(df['Batterietemperatur'])
 
 # Validate data
 df = df.loc[df['Geraet'] > 0]
